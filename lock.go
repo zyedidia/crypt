@@ -45,28 +45,30 @@ func (p *lockCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) 
 		}
 	}
 
+	err = lock(p.outname, pw, f.Args()...)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return subcommands.ExitFailure
+	}
+	return subcommands.ExitSuccess
+}
+
+func lock(outname string, pw []byte, files ...string) error {
 	buf := &bytes.Buffer{}
 	tw := tar.NewWriter(buf)
-	for _, arg := range f.Args() {
+	for _, arg := range files {
 		err := archive("", arg, tw)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			continue
+			return err
 		}
 	}
 	tw.Close()
 
 	ldata, err := Encrypt(pw, buf.Bytes())
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return subcommands.ExitFailure
+		return err
 	}
-	err = ioutil.WriteFile(p.outname, ldata, 0666)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return subcommands.ExitFailure
-	}
-	return subcommands.ExitSuccess
+	return ioutil.WriteFile(outname, ldata, 0666)
 }
 
 func archive(base, path string, tw *tar.Writer) error {

@@ -43,28 +43,34 @@ func (p *unlockCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 	} else {
 		os.MkdirAll(p.out, os.ModePerm)
 	}
-
-	for _, arg := range f.Args() {
-		data, err := ioutil.ReadFile(arg)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			continue
-		}
-		udata, err := Decrypt(pw, data)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			continue
-		}
-		tr := tar.NewReader(bytes.NewReader(udata))
-		if err = unlock(p.out, tr, pw); err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			continue
-		}
+	err = unlock(p.out, pw, f.Args()...)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return subcommands.ExitFailure
 	}
+
 	return subcommands.ExitSuccess
 }
 
-func unlock(base string, tr *tar.Reader, pw []byte) error {
+func unlock(out string, pw []byte, files ...string) error {
+	for _, arg := range files {
+		data, err := ioutil.ReadFile(arg)
+		if err != nil {
+			return err
+		}
+		udata, err := Decrypt(pw, data)
+		if err != nil {
+			return err
+		}
+		tr := tar.NewReader(bytes.NewReader(udata))
+		if err = extract(out, tr, pw); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func extract(base string, tr *tar.Reader, pw []byte) error {
 	for {
 		hdr, err := tr.Next()
 		if err == io.EOF {
