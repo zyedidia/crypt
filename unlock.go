@@ -24,12 +24,12 @@ func (*unlockCmd) Name() string     { return "unlock" }
 func (*unlockCmd) Synopsis() string { return "unlock crypt files" }
 func (*unlockCmd) Usage() string {
 	return `unlock [OPTS] FILE:
-  Unlock crypt files.
+  Decrypt and extract crypt archives.
 `
 }
 
 func (p *unlockCmd) SetFlags(f *flag.FlagSet) {
-	f.StringVar(&p.out, "o", "", "output directory or file name")
+	f.StringVar(&p.out, "o", "", "directory to place extracted files")
 }
 
 func (p *unlockCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {

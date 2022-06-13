@@ -22,12 +22,12 @@ func (*lockCmd) Name() string     { return "lock" }
 func (*lockCmd) Synopsis() string { return "lock files or directories" }
 func (*lockCmd) Usage() string {
 	return `lock [OPTS] FILES:
-  Lock file or directory.
+  Archive and encrypt files or directories.
 `
 }
 
 func (p *lockCmd) SetFlags(f *flag.FlagSet) {
-	f.StringVar(&p.outname, "o", "", "output file name")
+	f.StringVar(&p.outname, "o", "", "output crypt file name")
 }
 
 func (p *lockCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
