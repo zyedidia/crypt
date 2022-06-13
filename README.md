@@ -31,13 +31,11 @@ edit an encrypted file:
 $ crypt op file.txt.crypt micro file.txt
 ```
 
-Or simple open an interactive shell:
+Or open an interactive shell and view/edit the files from there:
 
 ```
 $ crypt op file.txt.crypt bash
 ```
-
-You can then view/edit the files from in the shell.
 
 # Install
 
