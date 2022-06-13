@@ -11,12 +11,26 @@ Creates a secure `.crypt` archive from a set of files.
 $ crypt lock file.txt
 ```
 
+```
+lock [OPTS] FILES:
+  Archive and encrypt files or directories.
+  -o string
+    	output crypt file name
+```
+
 ## Unlock
 
 Extracts a `.crypt` archive.
 
 ```
 $ crypt unlock file.txt.crypt
+```
+
+```
+unlock [OPTS] FILE:
+  Decrypt and extract crypt archives.
+  -o string
+    	directory to place extracted files
 ```
 
 ## Op
@@ -35,6 +49,11 @@ Or open an interactive shell and view/edit the files from there:
 
 ```
 $ crypt op file.txt.crypt bash
+```
+
+```
+op FILE COMMAND:
+  Operate on a crypt file.
 ```
 
 # Install
