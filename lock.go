@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	"syscall"
+	"unicode"
 
 	"github.com/google/subcommands"
 	"golang.org/x/term"
@@ -38,7 +39,7 @@ func (p *lockCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) 
 	}
 
 	if p.outname == "" {
-		if len(f.Args()) == 1 {
+		if len(f.Args()) == 1 && f.Args()[0] != "" && isword(f.Args()[0][0]) {
 			p.outname = f.Args()[0] + ".crypt"
 		} else {
 			p.outname = "archive.crypt"
@@ -112,4 +113,9 @@ func getpasswd() ([]byte, error) {
 	pw, err := term.ReadPassword(int(syscall.Stdin))
 	fmt.Println()
 	return pw, err
+}
+
+func isword(b byte) bool {
+	r := rune(b)
+	return unicode.IsLetter(r) || unicode.IsNumber(r)
 }
