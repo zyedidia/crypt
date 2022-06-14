@@ -15,6 +15,7 @@ func main() {
 	subcommands.Register(&lockCmd{}, "")
 	subcommands.Register(&unlockCmd{}, "")
 	subcommands.Register(&opCmd{}, "")
+	subcommands.Register(&versionCmd{}, "")
 
 	flag.Parse()
 	ctx := context.Background()
