@@ -3,6 +3,7 @@ package main
 import (
 	"archive/tar"
 	"bytes"
+	"compress/gzip"
 	"context"
 	"errors"
 	"flag"
@@ -62,7 +63,11 @@ func unlock(out string, pw []byte, files ...string) error {
 		if err != nil {
 			return err
 		}
-		tr := tar.NewReader(bytes.NewReader(udata))
+		zr, err := gzip.NewReader(bytes.NewReader(udata))
+		if err != nil {
+			return err
+		}
+		tr := tar.NewReader(zr)
 		if err = extract(out, tr, pw); err != nil {
 			return err
 		}

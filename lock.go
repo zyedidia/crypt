@@ -3,6 +3,7 @@ package main
 import (
 	"archive/tar"
 	"bytes"
+	"compress/gzip"
 	"context"
 	"flag"
 	"fmt"
@@ -56,7 +57,8 @@ func (p *lockCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) 
 
 func lock(outname string, pw []byte, files ...string) error {
 	buf := &bytes.Buffer{}
-	tw := tar.NewWriter(buf)
+	zw := gzip.NewWriter(buf)
+	tw := tar.NewWriter(zw)
 	for _, arg := range files {
 		err := archive("", arg, tw)
 		if err != nil {
@@ -64,6 +66,7 @@ func lock(outname string, pw []byte, files ...string) error {
 		}
 	}
 	tw.Close()
+	zw.Close()
 
 	ldata, err := Encrypt(pw, buf.Bytes())
 	if err != nil {
