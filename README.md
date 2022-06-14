@@ -58,6 +58,12 @@ op FILE COMMAND:
 
 # Install
 
+Prebuilt binary (see releases):
+
+```
+eget zyedidia/crypt
+```
+
 ```
 go install github.com/zyedidia/crypt@latest
 ```
