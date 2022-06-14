@@ -8,7 +8,7 @@ crypt_darwin_amd64:
 crypt_darwin_arm64:
 	GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags "-s -w" -o $@ .
 crypt_linux_amd64:
-	GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o $@.
+	GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o $@ .
 crypt_windows_amd64:
 	GOOS=windows GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o $@ .
 crypt_openbsd_amd64:
