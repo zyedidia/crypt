@@ -64,6 +64,8 @@ Prebuilt binary (see releases):
 eget zyedidia/crypt
 ```
 
+From source:
+
 ```
 go install github.com/zyedidia/crypt@latest
 ```
