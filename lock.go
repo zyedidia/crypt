@@ -55,6 +55,24 @@ func (p *lockCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) 
 	return subcommands.ExitSuccess
 }
 
+func lockFrom(outname string, pw []byte, hdr *tar.Header, data []byte) error {
+	buf := &bytes.Buffer{}
+	zw := gzip.NewWriter(buf)
+	tw := tar.NewWriter(zw)
+	err := archiveBytes(data, hdr, tw)
+	if err != nil {
+		return err
+	}
+	tw.Close()
+	zw.Close()
+
+	ldata, err := Encrypt(pw, buf.Bytes())
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(outname, ldata, 0666)
+}
+
 func lock(outname string, pw []byte, files ...string) error {
 	buf := &bytes.Buffer{}
 	zw := gzip.NewWriter(buf)
@@ -73,6 +91,17 @@ func lock(outname string, pw []byte, files ...string) error {
 		return err
 	}
 	return ioutil.WriteFile(outname, ldata, 0666)
+}
+
+func archiveBytes(data []byte, hdr *tar.Header, tw *tar.Writer) error {
+	// TODO: link target
+	hdr.Size = int64(len(data))
+	err := tw.WriteHeader(hdr)
+	if err != nil {
+		return err
+	}
+	_, err = tw.Write(data)
+	return err
 }
 
 func archive(base, path string, tw *tar.Writer) error {

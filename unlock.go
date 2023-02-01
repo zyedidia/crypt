@@ -68,14 +68,46 @@ func unlock(out string, pw []byte, files ...string) error {
 			return err
 		}
 		tr := tar.NewReader(zr)
-		if err = extract(out, tr, pw); err != nil {
+		if err = extract(out, tr); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func extract(base string, tr *tar.Reader, pw []byte) error {
+func unlockTo(out io.Writer, pw []byte, file string) (*tar.Header, error) {
+	data, err := ioutil.ReadFile(file)
+	if err != nil {
+		return nil, err
+	}
+	udata, err := Decrypt(pw, data)
+	if err != nil {
+		return nil, err
+	}
+	zr, err := gzip.NewReader(bytes.NewReader(udata))
+	if err != nil {
+		return nil, err
+	}
+	tr := tar.NewReader(zr)
+	hdr, err := tr.Next()
+	if err != nil {
+		return nil, err
+	}
+	if hdr.Typeflag != tar.TypeReg {
+		return nil, errors.New("crypt must have one file")
+	}
+	fdata, err := io.ReadAll(tr)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := tr.Next(); err != io.EOF {
+		return nil, errors.New("crypt must have one file")
+	}
+	_, err = out.Write(fdata)
+	return hdr, err
+}
+
+func extract(base string, tr *tar.Reader) error {
 	for {
 		hdr, err := tr.Next()
 		if err == io.EOF {

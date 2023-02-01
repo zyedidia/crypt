@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"flag"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 )
 
 type opCmd struct {
+	pipe bool
 }
 
 func (*opCmd) Name() string     { return "op" }
@@ -24,12 +26,53 @@ func (*opCmd) Usage() string {
 }
 
 func (p *opCmd) SetFlags(f *flag.FlagSet) {
+	f.BoolVar(&p.pipe, "pipe", false, "pipe encrypted file instead of using temp files")
+}
+
+func (p *opCmd) ExecutePipe(f *flag.FlagSet) subcommands.ExitStatus {
+	if len(f.Args()) < 2 {
+		fmt.Fprintln(os.Stderr, "too few arguments")
+		return subcommands.ExitFailure
+	}
+
+	pw, err := getpasswd()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return subcommands.ExitFailure
+	}
+	cryptf := f.Args()[0]
+	cmdline := f.Args()[1:]
+	buf := &bytes.Buffer{}
+	hdr, err := unlockTo(buf, pw, cryptf)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "op pipe: %v", err)
+		return subcommands.ExitFailure
+	}
+	output := &bytes.Buffer{}
+	cmd := exec.Command(cmdline[0], cmdline[1:]...)
+	cmd.Stdin = buf
+	cmd.Stdout = output
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return subcommands.ExitFailure
+	}
+	if err = lockFrom(cryptf, pw, hdr, output.Bytes()); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return subcommands.ExitFailure
+	}
+	return subcommands.ExitSuccess
 }
 
 func (p *opCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 	if len(f.Args()) < 2 {
 		fmt.Fprintln(os.Stderr, "too few arguments")
 		return subcommands.ExitFailure
+	}
+
+	if p.pipe {
+		return p.ExecutePipe(f)
 	}
 
 	pw, err := getpasswd()
