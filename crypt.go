@@ -20,7 +20,7 @@ func main() {
 	subcommands.Register(&opCmd{}, "")
 	subcommands.Register(&versionCmd{}, "")
 
-	kdf = flag.Int("kdf", 1048576, "number of iterations to use for key derivation")
+	kdf = flag.Int("kdf", 32768, "number of iterations to use for key derivation")
 
 	flag.Parse()
 
