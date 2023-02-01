@@ -8,7 +8,7 @@ import (
 	"github.com/google/subcommands"
 )
 
-var Version = "1.1.0"
+var Version = "1.2.0"
 
 type versionCmd struct {
 	outname string
