@@ -51,9 +51,22 @@ Or open an interactive shell and view/edit the files from there:
 $ crypt op file.txt.crypt bash
 ```
 
+The `-pipe` option will tell crypt to send the decrypted file contents to the
+op command's stdin via a pipe rather than via the temporary file system. The
+command's stdout will be written back to the file. This only works for
+single-file crypt archives. The benefit of this approach is that the
+decrypted file is only ever in process memory, rather than available in the
+file system, which makes it more secure. For example to edit a file with micro and `-pipe`:
+
+```
+$ crypt op -pipe file.txt.crypt micro
+```
+
 ```
 op FILE COMMAND:
   Operate on a crypt file.
+  -pipe
+        pipe encrypted file instead of using temp files
 ```
 
 # Install
