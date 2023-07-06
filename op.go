@@ -14,7 +14,8 @@ import (
 )
 
 type opCmd struct {
-	pipe bool
+	pipe  bool
+	write bool
 }
 
 func (*opCmd) Name() string     { return "op" }
@@ -27,6 +28,7 @@ func (*opCmd) Usage() string {
 
 func (p *opCmd) SetFlags(f *flag.FlagSet) {
 	f.BoolVar(&p.pipe, "pipe", false, "pipe encrypted file instead of using temp files")
+	f.BoolVar(&p.write, "write", false, "allow writing the encrypted file in pipe mode")
 }
 
 func (p *opCmd) ExecutePipe(f *flag.FlagSet) subcommands.ExitStatus {
@@ -51,12 +53,19 @@ func (p *opCmd) ExecutePipe(f *flag.FlagSet) subcommands.ExitStatus {
 	output := &bytes.Buffer{}
 	cmd := exec.Command(cmdline[0], cmdline[1:]...)
 	cmd.Stdin = buf
-	cmd.Stdout = output
+	if !p.write {
+		cmd.Stdout = os.Stdout
+	} else {
+		cmd.Stdout = output
+	}
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return subcommands.ExitFailure
+	}
+	if !p.write {
+		return subcommands.ExitSuccess
 	}
 	if err = lockFrom(cryptf, pw, hdr, output.Bytes()); err != nil {
 		fmt.Fprintln(os.Stderr, err)
